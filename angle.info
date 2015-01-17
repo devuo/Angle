@@ -1,0 +1,3 @@
+name = Angle
+description = Provides a smoother developer experience while using Angular.JS within Drupal.
+core = 7.x

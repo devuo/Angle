@@ -1,0 +1,62 @@
+<?php
+
+/**
+ * @file
+ * Main file for angle module.
+ */
+
+/**
+ * The cache id for the angle includes.
+ */
+define('ANGLE_INCLUDE_CACHE', 'angle_includes');
+
+/**
+ * Flag the current request as requiring Angular.JS integration.
+ *
+ * The angle libraries and integration javascript files will be injected
+ * in the current page.
+ */
+function angle_required() {
+  $has_run = &drupal_static(__FUNCTION__, FALSE);
+
+  if ($has_run) return;
+
+  $cache = cache_get(ANGLE_INCLUDE_CACHE);
+  $includes = empty($cache) ? FALSE : $cache->data;
+
+  if (!$includes) {
+    $directory = DRUPAL_ROOT . '/sites/all/libraries/angle';
+    $files = file_scan_directory($directory, '/.+.js$/');
+
+    $includes = array();
+    foreach ($files as $file) {
+      $includes[] = substr($file->uri, strlen(DRUPAL_ROOT) + 1);
+    }
+
+    // Attempt to put the main angular file before any other lib.
+    $sorter = function ($a, $b) {
+      $match = array('angular.js', 'angular.min.js');
+
+      if (in_array(basename($a), $match)) return -1;
+      if (in_array(basename($b), $match)) return +1;
+
+      return 0;
+    };
+
+    usort($includes, $sorter);
+
+    cache_set(ANGLE_INCLUDE_CACHE, $includes);
+  }
+
+  // Load the libraries javascript files.
+  foreach ($includes as $include) {
+    drupal_add_js($include, array('group' => JS_LIBRARY));
+  }
+
+  // Load the integration javascript file.
+  $path = drupal_get_path('module', 'angle');
+  drupal_add_js($path . '/angle.js', array('group' => JS_LIBRARY));
+
+  // Finally bootstrap angle at the very last moment.
+  drupal_add_js('angle.bootstrap()', array('type' => 'inline', 'scope' => 'footer'));
+}
