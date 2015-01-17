@@ -59,4 +59,6 @@ function angle_required() {
 
   // Finally bootstrap angle at the very last moment.
   drupal_add_js('angle.bootstrap()', array('type' => 'inline', 'scope' => 'footer'));
+
+  $has_run = TRUE;
 }
