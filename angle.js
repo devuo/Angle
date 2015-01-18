@@ -15,37 +15,20 @@
   var NAMED = 0x20;
 
   /**
-   * Mapping between an angular module method and a specific handler.
-   */
-  var types = {
-    dependencies: UNNAMED,
-    config: UNNAMED,
-    run: UNNAMED,
-    controller: NAMED,
-    directive: NAMED,
-    service: NAMED,
-    factory: NAMED,
-    provider: NAMED,
-    filter: NAMED,
-    constant: NAMED,
-    value: NAMED
-  };
-
-  /**
    * Contains the registry for the proxy angular module.
    */
   var registry = {
-    config: [],
-    run: [],
-    controller: [],
-    directive: [],
-    service: [],
-    factory: [],
-    provider: [],
-    filter: [],
-    animation: [],
-    constant: [],
-    value: []
+    config: { mode: UNNAMED, entries: [] },
+    run: { mode: UNNAMED, entries: [] },
+    controller: { mode: NAMED, entries: [] },
+    directive: { mode: NAMED, entries: [] },
+    service: { mode: NAMED, entries: [] },
+    factory: { mode: NAMED, entries: [] },
+    provider: { mode: NAMED, entries: [] },
+    filter: { mode: NAMED, entries: [] },
+    animation: { mode: NAMED, entries: [] },
+    constant: { mode: NAMED, entries: [] },
+    value: { mode: NAMED, entries: [] }
   };
 
   /**
@@ -63,8 +46,8 @@
   var angle = window.angle = {};
 
   // Register the angular module proxy methods inside the angle object.
-  for (var type in types) {
-    angle[type] = getHandler(type, types[type]);
+  for (var type in registry) {
+    angle[type] = getHandler(type, registry[type].mode);
   }
 
   /**
@@ -85,8 +68,6 @@
    *
    * All components registered through the proxy angle module are now bound to
    * the angular module instance.
-   *
-   * @returns {{}}
    */
   angle.bootstrap = function () {
 
@@ -101,6 +82,8 @@
 
     // Finally, bootstrap angular.
     angular.bootstrap(window.document, ['angle']);
+
+    return instance;
   };
 
   // Helpers
@@ -118,13 +101,13 @@
    */
   function getHandler(type, mode) {
     var named = function (name, value) {
-      registry[type].push({name: name, value: value});
+      registry[type].entries.push({name: name, value: value});
 
       return angle;
     };
 
     var unnamed = function (value) {
-      registry[type].push({ value: value });
+      registry[type].entries.push({ value: value });
 
       return angle;
     };
@@ -137,17 +120,17 @@
    */
   function bindRegistry(instance) {
     for (var type in registry) {
-      var items = registry[type];
+      var entries = registry[type].entries;
 
-      for (var i = 0; i < items.length; i++) {
-        var item = items[i];
+      for (var i = 0; i < entries.length; i++) {
+        var entry = entries[i];
 
-        if (types[type] == NAMED) {
-          instance[type](item.name, item.value);
+        if (registry[type].mode == NAMED) {
+          instance[type](entry.name, entry.value);
         }
 
-        if (types[type] == UNNAMED) {
-          instance[type](item.value);
+        if (registry[type].mode == UNNAMED) {
+          instance[type](entry.value);
         }
       }
     }
