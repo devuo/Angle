@@ -1,7 +1,7 @@
 (function (angular) {
 
   /**
-   * Unnamed handler type
+   * Unnamed handler type.
    *
    * @type {number}
    */

@@ -25,6 +25,8 @@ function angle_required() {
   $includes = empty($cache) ? FALSE : $cache->data;
 
   if (!$includes) {
+
+    // Check the angle libraries folder for .js files to include.
     $directory = DRUPAL_ROOT . '/sites/all/libraries/angle';
     $files = file_scan_directory($directory, '/.+.js$/');
 
