@@ -68,6 +68,8 @@
    *
    * All components registered through the proxy angle module are now bound to
    * the angular module instance.
+   *
+   * @returns {{}}
    */
   angle.bootstrap = function () {
 
